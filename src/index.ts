@@ -622,16 +622,16 @@ app.post('/api/save-recommendations', async (c) => {
 });
 
 //UNCOMMENT TO LET PEOPLE HIT CLEAR HISTORY
-app.get('/clear-history', async (c) => {
-    const giftList = c.env.GIFT_LIST.idFromName('global');
-    const giftObj = await c.env.GIFT_LIST.get(giftList);
+// app.get('/clear-history', async (c) => {
+//     const giftList = c.env.GIFT_LIST.idFromName('global');
+//     const giftObj = await c.env.GIFT_LIST.get(giftList);
     
-    await giftObj.fetch(new URL('/clear-history', 'http://localhost').href, {
-        method: 'DELETE'
-    });
+//     await giftObj.fetch(new URL('/clear-history', 'http://localhost').href, {
+//         method: 'DELETE'
+//     });
     
-    return c.text('History cleared');
-});
+//     return c.text('History cleared');
+// });
 
 
 export default app;
