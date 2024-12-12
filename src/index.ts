@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 import { html } from 'hono/html';
 import { raw as unsafeHTML } from 'hono/html';
-import { GiftRecSchema, type GiftRec } from './durable-objects/GiftRecsStore';
+// import { GiftRecSchema, type GiftRec } from './durable-objects/GiftRecsStore';
 import { nanoid } from 'nanoid';
 
 export interface Env {
@@ -200,7 +200,18 @@ app.get('/', (c) => {
 						<button type="submit">✨ Work Your Magic, Santa! 🎄</button>
 					</form>
 				</div>
-				<footer>Made with ❤️ using Cloudflare AI</footer>
+				<footer>
+                    Made w/ ❤️ using <a href="https://developers.cloudflare.com/workers-ai/" 
+                       style="color: white; text-decoration: underline;"
+                       target="_blank">
+                        Cloudflare Workers AI
+                    </a> -> 
+                    <a href="https://github.com/elizabethsiegle/ai-holiday-gift-recommender" 
+                       style="color: white; text-decoration: underline;"
+                       target="_blank">
+                        GitHub
+                    </a>
+                </footer>
 			</body>
 		</html>
 	`)
@@ -208,6 +219,9 @@ app.get('/', (c) => {
 
 app.post('/recommend', async (c) => {
 	const formData = await c.req.parseBody();
+	const snowflakes = Array(20).fill('❄️').map((_, i) => 
+		`<div class="snowflake" style="left: ${i % 2 === 0 ? '5' : '95'}vw; animation-delay: ${Math.random() * 15}s">❄️</div>`
+	).join('');
 	
 	const messages = [
 		{ role: "system", content: "You are Santa's AI helper, specializing in thoughtful gift recommendations." },
@@ -260,23 +274,38 @@ app.post('/recommend', async (c) => {
             <head>
                 <title>Gift Recommendations for ${formData.name} 🎁</title>
                 <style>
-                    body {
-                        margin: 0;
-                        font-family: system-ui;
-                        padding: 2rem;
-                        min-height: 100vh;
-                        background: linear-gradient(135deg, #1a472a, #2d5a40);
-                        color: white;
-                    }
-                    .container {
-                        max-width: 800px;
-                        margin: 0 auto;
-                        background: rgba(255, 255, 255, 0.95);
-                        padding: 2rem;
-                        border-radius: 12px;
-                        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-                        color: #333;
-                    }
+                                    body {
+                    margin: 0;
+                    font-family: system-ui;
+                    min-height: 100vh;
+                    background: linear-gradient(135deg, #1a472a, #2d5a40);
+                    color: white;
+                    display: flex;
+                    flex-direction: column;
+                    padding: 0;
+                    position: relative;     /* Added */
+                }
+                .container {
+                    max-width: 800px;
+                    margin: 2rem auto;
+                    background: rgba(255, 255, 255, 0.95);
+                    padding: 2rem;
+                    border-radius: 12px;
+                    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+                    color: #333;
+                    flex: 1;
+                    display: flex;          /* Added */
+                    flex-direction: column;  /* Added */
+                }
+                footer {
+                    text-align: center;
+                    padding: 1rem;
+                    color: rgba(255, 255, 255, 0.8);
+                    font-size: 0.9rem;
+                    background-color: rgba(178, 34, 34, 0.3);
+                    width: 100%;
+                    margin-top: auto;
+                }
                     h1 {
                         text-align: center;
                         color: #e4002b;
@@ -333,9 +362,41 @@ app.post('/recommend', async (c) => {
 						background: #1a472a;
 						transform: translateY(-2px);
 					}
+					
+					/* Snow animation */
+					@keyframes snowfall {
+						0% { 
+							transform: translateY(-10vh) translateX(0); 
+							opacity: 1;
+						}
+						100% { 
+							transform: translateY(100vh) translateX(20px);
+							opacity: 0.3;
+						}
+					}
+					.snowflake {
+						position: fixed;
+						top: -10vh;
+						animation: snowfall 15s linear infinite;
+						color: white;
+						opacity: 0.7;
+						text-shadow: 0 0 5px white;
+						pointer-events: none;
+						z-index: 1;
+						font-size: 24px;
+					}
+					.snowflake:nth-child(2n) { 
+						animation-duration: 12s; 
+						font-size: 16px;
+					}
+					.snowflake:nth-child(3n) { 
+						animation-duration: 18s;
+						font-size: 20px; 
+					}
                 </style>
             </head>
             <body>
+			${unsafeHTML(snowflakes)}
                 <div class="container">
                     <h1>🎁 Gift Ideas for ${formData.name}</h1>
                     <pre class="recommendations">
@@ -346,6 +407,18 @@ app.post('/recommend', async (c) => {
                         <a href="/history" class="history-button">📜 View All Recommendations</a>
                     </div>
                 </div>
+				<footer>
+                    Made w/ ❤️ using <a href="https://developers.cloudflare.com/workers-ai/" 
+                       style="color: white; text-decoration: underline;"
+                       target="_blank">
+                        Cloudflare Workers AI
+                    </a> -> 
+                    <a href="https://github.com/elizabethsiegle/ai-holiday-gift-recommender" 
+                       style="color: white; text-decoration: underline;"
+                       target="_blank">
+                        GitHub
+                    </a>
+                </footer>
             </body>
         </html>
     `);
@@ -358,6 +431,9 @@ interface GiftHistory {
 }
 
 app.get('/history', async (c) => {
+	const snowflakes = Array(20).fill('❄️').map((_, i) => 
+		`<div class="snowflake" style="left: ${i % 2 === 0 ? '5' : '95'}vw; animation-delay: ${Math.random() * 15}s">❄️</div>`
+	).join('');
 	const giftList = c.env.GIFT_LIST.idFromName('global');
 	const giftObj = await c.env.GIFT_LIST.get(giftList);
 	
@@ -367,6 +443,13 @@ app.get('/history', async (c) => {
 	const history = await response.json() as GiftHistory[];
 	console.log('Retrieved history:', history);
 
+	/* 
+		* This section uses unsafeHTML to properly render HTML content instead of escaping it.
+		* 1. unsafeHTML wrapper: Prevents the HTML from being displayed as text
+		* 2. Regular template literals (``) for inner HTML: Allows proper string interpolation
+		* 3. Data cleaning: Filters out unwanted text and formats recommendations
+		* 4. Semantic HTML: Uses proper list elements (ol, ul, li) for accessibility
+	*/
 	return c.html(html`
 		<!DOCTYPE html>
 		<html>
@@ -374,21 +457,36 @@ app.get('/history', async (c) => {
 				<title>Gift Recommendation History 📜</title>
 				<style>
 					body {
-						max-width: 800px;
-						margin: 0 auto;
-						font-family: system-ui;
-						padding: 2rem 1rem;
-						min-height: 100vh;
-						background: linear-gradient(135deg, #1a472a, #2d5a40);
-						color: white;
-					}
-					.container {
-						background: rgba(255, 255, 255, 0.95);
-						padding: 2rem;
-						border-radius: 12px;
-						box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-						color: #333;
-					}
+                        margin: 0;
+                        font-family: system-ui;
+                        min-height: 100vh;
+                        background: linear-gradient(135deg, #1a472a, #2d5a40);
+                        color: white;
+                        display: flex;
+                        flex-direction: column;
+                        padding: 0;
+                    }
+                    .container {
+                        max-width: 800px;
+                        margin: 2rem auto;
+                        background: rgba(255, 255, 255, 0.95);
+                        padding: 2rem;
+                        border-radius: 12px;
+                        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+                        color: #333;
+                        flex: 1;
+                    }
+                    footer {
+                        text-align: center;
+                        padding: 1rem;
+                        color: rgba(255, 255, 255, 0.8);
+                        font-size: 0.9rem;
+                        background-color: rgba(178, 34, 34, 0.3);
+                        width: 100%;
+                        margin-top: auto;
+                        position: sticky;
+                        bottom: 0;
+                    }
 					.history-list {
 						list-style: decimal;
 						padding-left: 2rem;
@@ -419,9 +517,41 @@ app.get('/history', async (c) => {
 						background: rgba(45, 90, 64, 0.1);
 						border-radius: 6px;
 					}
+				
+					/* Snow animation */
+					@keyframes snowfall {
+						0% { 
+							transform: translateY(-10vh) translateX(0); 
+							opacity: 1;
+						}
+						100% { 
+							transform: translateY(100vh) translateX(20px);
+							opacity: 0.3;
+						}
+					}
+					.snowflake {
+						position: fixed;
+						top: -10vh;
+						animation: snowfall 15s linear infinite;
+						color: white;
+						opacity: 0.7;
+						text-shadow: 0 0 5px white;
+						pointer-events: none;
+						z-index: 1;
+						font-size: 24px;
+					}
+					.snowflake:nth-child(2n) { 
+						animation-duration: 12s; 
+						font-size: 16px;
+					}
+					.snowflake:nth-child(3n) { 
+						animation-duration: 18s;
+						font-size: 20px; 
+					}
 				</style>
 			</head>
 			<body>
+			${unsafeHTML(snowflakes)}
 				<div class="container">
 					<h1>📜 Gift Recommendation History</h1>
 					${unsafeHTML(`
@@ -445,7 +575,22 @@ app.get('/history', async (c) => {
 							}).join('')}
 						</ol>
 					`)}
+					<div class="button-container">
+                        <a href="/" class="back-button">🎅 Back to Gift-O-Matic</a>
+                    </div>
 				</div>
+				<footer>
+                    Made w/ ❤️ using <a href="https://developers.cloudflare.com/workers-ai/" 
+                       style="color: white; text-decoration: underline;"
+                       target="_blank">
+                        Cloudflare Workers AI
+                    </a> -> 
+                    <a href="https://github.com/elizabethsiegle/ai-holiday-gift-recommender" 
+                       style="color: white; text-decoration: underline;"
+                       target="_blank">
+                        GitHub
+                    </a>
+                </footer>
 			</body>
 		</html>
 	`);
